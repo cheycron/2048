@@ -11,6 +11,12 @@ function VisualEffectsManager() {
   this.baseColor = { r: 15, g: 23, b: 42 };
   this.targetVectors = { x: 0, y: 0 };
 
+  this.energy = 0;
+  this.progressFactor = 0.09; // Se ajusta basado en el máx tile (2048 => 1.0)
+  this.breathingPhase = 0;
+  this.soundManager = null;
+  this.gameContainer = document.querySelector('.game-container');
+
   this.resize();
   window.addEventListener('resize', this.resize.bind(this));
 
@@ -20,6 +26,15 @@ function VisualEffectsManager() {
 
   this.loop();
 }
+
+VisualEffectsManager.prototype.setSoundManager = function(soundManager) {
+  this.soundManager = soundManager;
+};
+
+VisualEffectsManager.prototype.setGameProgress = function(maxTileValue) {
+  var valCapped = Math.min(maxTileValue, 2048);
+  this.progressFactor = Math.max(Math.log(valCapped) / Math.log(2), 1) / 11;
+};
 
 VisualEffectsManager.prototype.createParticle = function(x, y) {
   return {
@@ -44,14 +59,19 @@ VisualEffectsManager.prototype.resize = function() {
 
 VisualEffectsManager.prototype.triggerMove = function(direction) {
   // 0: up, 1: right, 2: down, 3: left
-  var force = 12;
+  var force = 12 * this.progressFactor;
   if(direction === 0) { this.targetVectors.x = 0; this.targetVectors.y = -force; }
   if(direction === 1) { this.targetVectors.x = force; this.targetVectors.y = 0; }
   if(direction === 2) { this.targetVectors.x = 0; this.targetVectors.y = force; }
   if(direction === 3) { this.targetVectors.x = -force; this.targetVectors.y = 0; }
 
   // Slight screen flash on move
-  this.flashIntensity = Math.max(this.flashIntensity, 0.08);
+  this.flashIntensity = Math.max(this.flashIntensity, 0.08 * this.progressFactor);
+
+  // Aumentar la energía con cada movimiento, escalado por el progreso
+  var energyAdd = 0.15 * this.progressFactor;
+  var maxEnergy = 1.5 * this.progressFactor;
+  this.energy = Math.min(this.energy + energyAdd, maxEnergy);
 };
 
 VisualEffectsManager.prototype.triggerMerge = function(value) {
@@ -60,14 +80,20 @@ VisualEffectsManager.prototype.triggerMerge = function(value) {
   var normalizedVal = Math.max((Math.log(valCapped) / Math.log(2)) / 11, 0.1);
 
   // Increase flash intensely based on merge value
-  this.flashIntensity = Math.min(this.flashIntensity + 0.3 + (normalizedVal * 0.6), 1);
+  var flashAdd = (0.15 + (normalizedVal * 0.3)) * this.progressFactor;
+  this.flashIntensity = Math.min(this.flashIntensity + flashAdd, 1 * this.progressFactor);
+
+  // Aumentar energía fuertemente según el valor fusionado
+  var energyAdd = (0.1 + (normalizedVal * 0.25)) * this.progressFactor;
+  var maxEnergy = 1.5 * this.progressFactor;
+  this.energy = Math.min(this.energy + energyAdd, maxEnergy);
 
   // Create an explosion of lively particles radiating from center
-  var numExplosionParticles = Math.floor(20 * normalizedVal) + 5;
+  var numExplosionParticles = Math.floor(10 * normalizedVal * this.progressFactor) + 3;
   for(var i=0; i<numExplosionParticles; i++) {
     var p = this.createParticle(this.width/2, this.height/2);
     var angle = Math.random() * Math.PI * 2;
-    var speed = (Math.random() * 15 + 5) * normalizedVal;
+    var speed = (Math.random() * 8 + 3) * normalizedVal;
     p.vx = Math.cos(angle) * speed;
     p.vy = Math.sin(angle) * speed;
     p.size = Math.random() * 6 * normalizedVal + 2;
@@ -94,6 +120,30 @@ VisualEffectsManager.prototype.loop = function() {
   this.targetVectors.x *= 0.92;
   this.targetVectors.y *= 0.92;
 
+  // Decaimiento natural de la energía (vuelve a idle)
+  this.energy = Math.max(0, this.energy - 0.002);
+
+  // Actualizar el pulso auditivo
+  if (this.soundManager) {
+    this.soundManager.setDroneEnergy(this.energy);
+  }
+
+  // Actualizar respiración del tablero (game-container)
+  if (this.gameContainer) {
+    // Frecuencia base de idle: 0.01. Con energía sube hasta ~0.08
+    var breathingFreq = 0.01 + (this.energy * 0.05);
+    this.breathingPhase += breathingFreq;
+
+    // Amplitud del latido (scale)
+    var amplitude = 0.002 + (this.energy * 0.01);
+    var scale = 1.0 + Math.sin(this.breathingPhase) * amplitude;
+
+    var rotateAmplitude = this.energy * 0.25; // Ligera rotación en alta energía
+    var rotate = Math.cos(this.breathingPhase * 0.5) * rotateAmplitude;
+
+    this.gameContainer.style.transform = 'scale(' + scale + ') rotate(' + rotate + 'deg)';
+  }
+
   // Update & Draw particles
   for (var i = this.particles.length - 1; i >= 0; i--) {
     var p = this.particles[i];
@@ -104,6 +154,25 @@ VisualEffectsManager.prototype.loop = function() {
     // Add some drag to velocity
     p.vx *= 0.98;
     p.vy *= 0.98;
+
+    // Fuerzas de swirling (remolino) que se activan con la energía
+    if (this.energy > 0.01) {
+      var dx = (this.width / 2) - p.x;
+      var dy = (this.height / 2) - p.y;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+      var tx = -dy / dist;
+      var ty = dx / dist;
+
+      var swirlForce = this.energy * 0.15;
+      p.vx += tx * swirlForce;
+      p.vy += ty * swirlForce;
+
+      // Ligera fuerza gravitacional al centro para evitar que escapen por el remolino
+      var gravity = this.energy * 0.02;
+      p.vx += (dx / dist) * gravity;
+      p.vy += (dy / dist) * gravity;
+    }
 
     // Wrap around screen
     if(p.x < 0) p.x = this.width;

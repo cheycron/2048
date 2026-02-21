@@ -3,6 +3,8 @@ function SoundManager() {
   this.initialized = false;
   this.masterGain = null;
   this.droneOsc = null;
+  this.droneLfo = null;
+  this.droneGain = null;
 }
 
 SoundManager.prototype.init = function() {
@@ -31,9 +33,11 @@ SoundManager.prototype.startDrone = function() {
   var droneLfo = this.audioCtx.createOscillator();
   droneLfo.type = 'sine';
   droneLfo.frequency.value = 0.2; // 0.2 Hz pulsation
+  this.droneLfo = droneLfo;
 
   var droneGain = this.audioCtx.createGain();
   droneGain.gain.value = 0.15;
+  this.droneGain = droneGain;
 
   var lfoGain = this.audioCtx.createGain();
   lfoGain.gain.value = 0.08;
@@ -46,6 +50,24 @@ SoundManager.prototype.startDrone = function() {
 
   this.droneOsc.start();
   droneLfo.start();
+};
+
+SoundManager.prototype.setDroneEnergy = function(energy) {
+  if (!this.initialized || !this.audioCtx || !this.droneLfo || !this.droneGain || !this.droneOsc) return;
+
+  var cappedEnergy = Math.min(Math.max(energy, 0), 1.5);
+
+  // Escalar la frecuencia del latido: reposo 0.2Hz, máxima energía 3.0Hz
+  var targetLfoFreq = 0.2 + (cappedEnergy * 2.8);
+  this.droneLfo.frequency.setTargetAtTime(targetLfoFreq, this.audioCtx.currentTime, 0.1);
+
+  // Incrementar un poco el volumen del drone con la energía
+  var targetGain = 0.15 + (cappedEnergy * 0.15);
+  this.droneGain.gain.setTargetAtTime(targetGain, this.audioCtx.currentTime, 0.1);
+
+  // Subir sutilmente el tono base
+  var baseFreq = 55 + (cappedEnergy * 10);
+  this.droneOsc.frequency.setTargetAtTime(baseFreq, this.audioCtx.currentTime, 0.1);
 };
 
 SoundManager.prototype.playMove = function(direction) {

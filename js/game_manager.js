@@ -6,6 +6,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.soundManager   = new SoundManager();
   this.visualEffects  = new VisualEffectsManager();
+  this.visualEffects.setSoundManager(this.soundManager);
 
   this.startTiles     = 2;
 
@@ -84,11 +85,21 @@ GameManager.prototype.actuate = function () {
     this.storageManager.setBestScore(this.score);
   }
 
-  // Clear the state when the game is over (game over only, not win)
   if (this.over) {
     this.storageManager.clearGameState();
   } else {
     this.storageManager.setGameState(this.serialize());
+  }
+
+  // Configurar el progreso visual basado en la pieza de mayor valor
+  var maxTile = 2;
+  this.grid.eachCell(function(x, y, tile) {
+    if (tile && tile.value > maxTile) {
+      maxTile = tile.value;
+    }
+  });
+  if (this.visualEffects) {
+    this.visualEffects.setGameProgress(maxTile);
   }
 
   this.actuator.actuate(this.grid, {
