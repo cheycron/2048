@@ -4,6 +4,9 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
 
+  this.soundManager   = new SoundManager();
+  this.visualEffects  = new VisualEffectsManager();
+
   this.startTiles     = 2;
 
   this.inputManager.on("move", this.move.bind(this));
@@ -133,11 +136,18 @@ GameManager.prototype.move = function (direction) {
 
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
+  // Initialize sound on first user interaction to comply with browser policies
+  if (this.soundManager && !this.soundManager.initialized) {
+    this.soundManager.init();
+  }
+
   var cell, tile;
 
   var vector     = this.getVector(direction);
   var traversals = this.buildTraversals(vector);
   var moved      = false;
+
+  var maxMergeValue = 0; // Track highest merge value for effects
 
   // Save the current tile positions and remove merger information
   this.prepareTiles();
@@ -166,6 +176,10 @@ GameManager.prototype.move = function (direction) {
           // Update the score
           self.score += merged.value;
 
+          if (merged.value > maxMergeValue) {
+            maxMergeValue = merged.value;
+          }
+
           // The mighty 2048 tile
           if (merged.value === 2048) self.won = true;
         } else {
@@ -184,6 +198,15 @@ GameManager.prototype.move = function (direction) {
 
     if (!this.movesAvailable()) {
       this.over = true; // Game over!
+    }
+
+    if (this.visualEffects) this.visualEffects.triggerMove(direction);
+
+    if (maxMergeValue > 0) {
+      if (this.soundManager) this.soundManager.playMerge(maxMergeValue);
+      if (this.visualEffects) this.visualEffects.triggerMerge(maxMergeValue);
+    } else {
+      if (this.soundManager) this.soundManager.playMove(direction);
     }
 
     this.actuate();

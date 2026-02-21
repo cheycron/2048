@@ -1,0 +1,184 @@
+:root {
+  /* 🌑 Deep Twilight (Estructura) */
+  --fc-bg-main: #121418;
+  --fc-bg-surface: #191c22;
+  --fc-bg-elevated: #2e3440;
+  --fc-border: #3b4252;
+  --fc-detail: #484f5c;
+
+  /* 🌫️ Dawnlight (Tipografía) */
+  --fc-text-faint: #6a7280;
+  --fc-text-muted: #b2b6bf;
+  --fc-text-body: #cbced5;
+  --fc-text-heading: #d8dadf;
+  --fc-text-bright: #e4e6e9;
+
+  /* 🌊 Ocean Blues (Interacción) */
+  --fc-act-subtle: #5e81ac;
+  --fc-act-primary: #81a1c1;
+  --fc-act-focus: #88c0d0;
+  --fc-act-active: #8fbcbb;
+  --fc-act-decor: #95b1b0;
+
+  /* 🚥 Vivid Accents (Feedback & Semántica) */
+  --fc-err: #bf616a;
+  --fc-warn: #ebcb8b;
+  --fc-success: #a3be8c;
+  --fc-info: #b48ead;
+  --fc-highlight: #d08770;
+}
+
+html, body {
+  background: transparent;
+  color: var(--fc-text-body);
+}
+
+h1.title {
+  color: var(--fc-text-heading);
+}
+
+p {
+  color: var(--fc-text-body);
+}
+
+a {
+  color: var(--fc-act-primary);
+}
+
+strong.important {
+  color: var(--fc-text-bright);
+}
+
+hr {
+  border-bottom-color: var(--fc-border);
+}
+
+/* Scores */
+.score-container, .best-container {
+  background: var(--fc-bg-elevated);
+  color: var(--fc-text-bright);
+  /* Usamos outline o box-shadow para no alterar el box-model original */
+  box-shadow: 0 0 0 1px var(--fc-border);
+}
+
+.score-container:after, .best-container:after {
+  color: var(--fc-text-muted);
+}
+
+.score-container .score-addition, .best-container .score-addition {
+  color: var(--fc-highlight);
+}
+
+/* Game Container */
+.game-container {
+  background: var(--fc-bg-surface);
+  /* Evitamos agregar border que sume ancho, usamos box-shadow inset o outline */
+  box-shadow: 0 0 0 1px var(--fc-border);
+}
+
+.grid-cell {
+  background: var(--fc-bg-elevated);
+  /* Importante: NO agregar border aquí para no romper el layout de la grilla */
+}
+
+/* Game Message Overlay */
+.game-container .game-message {
+  background: rgba(18, 20, 24, 0.9); /* FC-bg-main with opacity */
+  color: var(--fc-text-bright);
+}
+
+.game-container .game-message p {
+  color: var(--fc-text-heading);
+}
+
+/* Buttons */
+.restart-button,
+.game-container .game-message a {
+  background: var(--fc-act-primary);
+  color: var(--fc-bg-main);
+}
+
+.game-container .game-message.game-won {
+  background: rgba(163, 190, 140, 0.8); /* FC-success with opacity */
+  color: var(--fc-bg-main);
+}
+
+/* Tiles */
+.tile .tile-inner {
+  color: var(--fc-bg-main);
+  box-shadow: none; /* Remove retro shadows */
+  /* Removemos border que afectaba tamaño */
+}
+
+/* 2 */
+.tile.tile-2 .tile-inner {
+  background: var(--fc-act-subtle);
+  color: var(--fc-text-bright);
+}
+
+/* 4 */
+.tile.tile-4 .tile-inner {
+  background: var(--fc-act-focus);
+  color: var(--fc-bg-main);
+}
+
+/* 8 */
+.tile.tile-8 .tile-inner {
+  background: var(--fc-act-active);
+  color: var(--fc-bg-main);
+}
+
+/* 16 */
+.tile.tile-16 .tile-inner {
+  background: var(--fc-act-primary);
+  color: var(--fc-bg-main);
+}
+
+/* 32 */
+.tile.tile-32 .tile-inner {
+  background: var(--fc-success);
+  color: var(--fc-bg-main);
+}
+
+/* 64 */
+.tile.tile-64 .tile-inner {
+  background: var(--fc-info);
+  color: var(--fc-bg-main);
+}
+
+/* 128 */
+.tile.tile-128 .tile-inner {
+  background: var(--fc-highlight);
+  color: var(--fc-bg-main);
+}
+
+/* 256 */
+.tile.tile-256 .tile-inner {
+  background: var(--fc-warn);
+  color: var(--fc-bg-main);
+}
+
+/* 512 */
+.tile.tile-512 .tile-inner {
+  background: var(--fc-err);
+  color: var(--fc-text-bright);
+}
+
+/* 1024 */
+.tile.tile-1024 .tile-inner {
+  background: var(--fc-act-decor);
+  color: var(--fc-bg-main);
+}
+
+/* 2048 */
+.tile.tile-2048 .tile-inner {
+  background: #d08770;
+  color: var(--fc-bg-main);
+  box-shadow: 0 0 10px var(--fc-warn); /* Glow externo no afecta layout */
+}
+
+.tile.tile-super .tile-inner {
+  background: var(--fc-bg-main);
+  color: var(--fc-text-bright);
+  box-shadow: inset 0 0 0 1px var(--fc-text-bright); /* Inset shadow simula borde */
+}
