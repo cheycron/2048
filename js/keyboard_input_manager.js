@@ -1,5 +1,8 @@
 function KeyboardInputManager() {
   this.events = {};
+  this.isProcessingMove = false; // Flag to prevent move spam
+  this.moveDelay = 100; // Minimum milliseconds between moves
+  this.lastMoveTime = 0;
 
   if (window.navigator.msPointerEnabled) {
     //Internet Explorer 10 style
@@ -58,13 +61,40 @@ KeyboardInputManager.prototype.listen = function () {
     if (!modifiers) {
       if (mapped !== undefined) {
         event.preventDefault();
-        self.emit("move", mapped);
+
+        // Rate limiting: check if enough time has passed since last move
+        var now = Date.now();
+        if (now - self.lastMoveTime >= self.moveDelay && !self.isProcessingMove) {
+          self.lastMoveTime = now;
+          self.isProcessingMove = true;
+
+          self.emit("move", mapped);
+
+          // Reset flag after a short delay
+          setTimeout(function() {
+            self.isProcessingMove = false;
+          }, 50);
+        }
       }
     }
 
     // R key restarts the game
     if (!modifiers && event.which === 82) {
       self.restart.call(self, event);
+    }
+
+    // Debug cheats (Alt+Shift+V = Win, Alt+Shift+X = Lose)
+    // Using Alt+Shift to avoid browser conflicts
+    if (event.altKey && event.shiftKey && !event.ctrlKey) {
+      if (event.which === 86) { // V key - Auto Win (Victory)
+        event.preventDefault();
+        self.emit("debugWin");
+        console.log('🎮 DEBUG: Auto-win triggered (Alt+Shift+V)');
+      } else if (event.which === 88) { // X key - Auto Lose (eXplosion)
+        event.preventDefault();
+        self.emit("debugLose");
+        console.log('🎮 DEBUG: Auto-lose triggered (Alt+Shift+X)');
+      }
     }
   });
 
@@ -121,8 +151,19 @@ KeyboardInputManager.prototype.listen = function () {
     var absDy = Math.abs(dy);
 
     if (Math.max(absDx, absDy) > 10) {
-      // (right : left) : (down : up)
-      self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+      // Rate limiting for touch events too
+      var now = Date.now();
+      if (now - self.lastMoveTime >= self.moveDelay && !self.isProcessingMove) {
+        self.lastMoveTime = now;
+        self.isProcessingMove = true;
+
+        // (right : left) : (down : up)
+        self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+
+        setTimeout(function() {
+          self.isProcessingMove = false;
+        }, 50);
+      }
     }
   });
 };
@@ -139,6 +180,8 @@ KeyboardInputManager.prototype.keepPlaying = function (event) {
 
 KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
   var button = document.querySelector(selector);
-  button.addEventListener("click", fn.bind(this));
-  button.addEventListener(this.eventTouchend, fn.bind(this));
+  if (button) {
+    button.addEventListener("click", fn.bind(this));
+    button.addEventListener(this.eventTouchend, fn.bind(this));
+  }
 };

@@ -662,7 +662,7 @@ hr {
   margin-bottom: 0;
 }
 
-.restart-button {
+.restart-button, .mission-button {
   display: inline-block;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
@@ -676,15 +676,24 @@ hr {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
-.restart-button:hover {
+.restart-button:hover, .mission-button:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
-.restart-button {
+.restart-button, .mission-button {
   display: block;
   text-align: center;
   float: right;
+}
+
+.mission-button {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.mission-button:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .game-explanation {

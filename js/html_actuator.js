@@ -59,7 +59,7 @@ HTMLActuator.prototype.addTile = function (tile) {
 
   if (tile.value > 2048) classes.push("tile-super");
 
-  this.applyClasses(wrapper, classes);
+      this.applyClasses(wrapper, classes);
 
   inner.classList.add("tile-inner");
   inner.textContent = tile.value;
@@ -100,6 +100,13 @@ HTMLActuator.prototype.normalizePosition = function (position) {
 
 HTMLActuator.prototype.positionClass = function (position) {
   position = this.normalizePosition(position);
+
+  // Apply inline transform for responsive positioning
+  if (window.responsiveHelper) {
+    var pos = window.responsiveHelper.getTilePosition(position.x - 1, position.y - 1);
+    // We'll apply this in the addTile method
+  }
+
   return "tile-position-" + position.x + "-" + position.y;
 };
 
@@ -118,6 +125,8 @@ HTMLActuator.prototype.updateScore = function (score) {
 
     this.scoreContainer.appendChild(addition);
   }
+
+  // Oxygen system is now updated via game:progression events
 };
 
 HTMLActuator.prototype.updateBestScore = function (bestScore) {
@@ -126,10 +135,18 @@ HTMLActuator.prototype.updateBestScore = function (bestScore) {
 
 HTMLActuator.prototype.message = function (won) {
   var type    = won ? "game-won" : "game-over";
-  var message = won ? "You win!" : "Game over!";
+  var message = won ? "🛰️ Reentrada Exitosa!" : "💥 Misión Fallida";
 
   this.messageContainer.classList.add(type);
-  this.messageContainer.getElementsByTagName("p")[0].textContent = message;
+  var messageElement = this.messageContainer.getElementsByTagName("p")[0];
+  messageElement.textContent = message;
+
+  // Add subtitle based on outcome
+  if (won) {
+    messageElement.innerHTML = message + '<br><span style="font-size: 24px; color: #10b981; margin-top: 10px; display: block;">Vector 2048 m/s alcanzado</span>';
+  } else {
+    messageElement.innerHTML = message + '<br><span style="font-size: 24px; color: #ef4444; margin-top: 10px; display: block;">La tripulación se perdió</span>';
+  }
 };
 
 HTMLActuator.prototype.clearMessage = function () {

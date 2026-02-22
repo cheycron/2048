@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
-  <link href="style/main.css" rel="stylesheet" type="text/css">
+  <!-- <link href="style/main.css" rel="stylesheet" type="text/css"> -->
+  <link href="style/responsive.css" rel="stylesheet" type="text/css">
   <!-- <link href="style/flatcap.css" rel="stylesheet" type="text/css"> -->
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
@@ -18,30 +19,46 @@
 
   <meta name="HandheldFriendly" content="True">
   <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
-  <div class="container">
-    <div class="heading">
-      <h1 class="title">2048</h1>
-      <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="header-left">
+        <h1 class="title">2048</h1>
+        <p class="subtitle">Vector de Reentrada</p>
       </div>
+      <div class="header-right">
+        <div class="score-box">
+          <span class="score-label">Score</span>
+          <span class="score-value score-container">0</span>
+        </div>
+        <div class="score-box best">
+          <span class="score-label">Best</span>
+          <span class="score-value best-container">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="controls-bar">
+      <button class="btn btn-secondary mission-button" onclick="if(typeof MissionBriefing !== 'undefined') { localStorage.removeItem('missionBriefingShown'); new MissionBriefing(); }">
+        <span class="btn-icon">📡</span>
+        <span class="btn-text">Misión</span>
+      </button>
+      <button class="btn btn-primary restart-button">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Nuevo Juego</span>
+      </button>
     </div>
 
-    <div class="above-game">
-      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
-    </div>
-
-    <div class="game-container">
+    <div class="game-container-wrapper">
+      <div class="game-container">
       <div class="game-message">
         <p></p>
         <div class="lower">
-	        <a class="keep-playing-button">Keep going</a>
-          <a class="retry-button">Try again</a>
+	        <button class="btn btn-secondary keep-playing-button">Continuar</button>
+          <button class="btn btn-primary retry-button">Reintentar</button>
         </div>
       </div>
 
@@ -75,16 +92,23 @@
       <div class="tile-container">
 
       </div>
+      </div>
     </div>
 
-    <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
-    </p>
+    <footer class="game-footer">
+      <p class="instructions">
+        <span class="instructions-icon">⌨️</span>
+        Usa las <strong>flechas</strong> para mover. Fusiona números iguales. Objetivo: <strong>2048 m/s</strong>
+      </p>
+    </footer>
   </div>
 
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
+  <script src="js/responsive_helper.js"></script>
+  <script src="js/event_bus.js"></script>
+  <script src="js/mission_briefing.js"></script>
   <script src="js/keyboard_input_manager.js"></script>
   <script src="js/html_actuator.js"></script>
   <script src="js/grid.js"></script>
@@ -92,7 +116,9 @@
   <script src="js/local_storage_manager.js"></script>
   <script src="js/sound_manager.js"></script>
   <script src="js/visual_effects.js"></script>
+  <script src="js/oxygen_system.js"></script>
   <script src="js/game_manager.js"></script>
+  <script src="js/debug_overlay.js"></script>
   <script src="js/application.js"></script>
 </body>
 </html>

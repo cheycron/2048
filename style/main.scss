@@ -494,11 +494,21 @@ hr {
   margin-bottom: 0;
 }
 
-.restart-button {
+.restart-button, .mission-button {
   @include button;
   display: block;
   text-align: center;
   float: right;
+}
+
+.mission-button {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+  }
 }
 
 .game-explanation {
